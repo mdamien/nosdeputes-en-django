@@ -16,7 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from .views import api_seance
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('core.urls')),
+    path('seance/', api_seance),
 ]

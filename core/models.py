@@ -377,7 +377,7 @@ class Tagging(models.Model):
 
 
 class Texteloi(models.Model):
-    id = models.CharField(unique=True, max_length=16, blank=True, null=True)
+    id = models.CharField(unique=True, max_length=16, blank=True, primary_key=True)
     nb_commentaires = models.BigIntegerField(blank=True, null=True)
     legislature = models.BigIntegerField(blank=True, null=True)
     numero = models.BigIntegerField(blank=True, null=True)
