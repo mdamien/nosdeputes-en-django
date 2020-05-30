@@ -20,12 +20,12 @@ def jsonify(queryset):
 
 
 def api_seance(request):
-    seance_id = 103
+    seance_id = 1050
     loi_id = 820
 
     interventions = Intervention.objects.filter(seance_id=seance_id)
     taggings = Tagging.objects.filter(taggable_model="Intervention", taggable_id__in=interventions)
-    tags = Tag.objects.filter(id__in=taggings.values('tag_id'), triple_key='numero')
+    tags = Tag.objects.filter(id__in=taggings.values('tag_id'), triple_namespace='loi', triple_key='numero')
 
     interventions = jsonify(interventions)
     taggings = jsonify(taggings)
@@ -43,7 +43,11 @@ def api_seance(request):
         ]
 
     # keep only intervention about this law
-    interventions = [intervention for intervention in interventions if intervention['taggings']]
+    interventions_about_law = []
+    for intervention in interventions:
+        lois_id = [tag['triple_value'] for tagging in intervention['taggings'] for tag in tagging['tags']]
+        if str(loi_id) in lois_id:
+            interventions_about_law.append(intervention)
 
     data = {'seance': interventions}
 
