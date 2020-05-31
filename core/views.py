@@ -63,7 +63,7 @@ def api_seance(request):
         if intervention['parlementaire_id']:
             intervention['parlementaire'] = find_by_id(parlementaires, intervention['parlementaire_id'])
         if intervention['personnalite_id']:
-            intervention['Personnalite'] = find_by_id(personnalites, intervention['personnalite_id'])
+            intervention['personnalite'] = find_by_id(personnalites, intervention['personnalite_id'])
         intervention['taggings'] = [
             tagging for tagging in taggings
             if intervention['id'] == tagging['taggable_id']
@@ -84,6 +84,16 @@ def api_seance(request):
         if 'organisme' in intervention['seance']:
             seance_lieu = intervention['seance']['organisme']['nom']
 
+        intervenant_nom = ""
+        intervenant_groupe = ""
+        intervenant_slug = ""
+        if intervention["parlementaire_id"]:
+            intervenant_nom = intervention['parlementaire']['nom']
+            intervenant_groupe = intervention['parlementaire']['groupe_acronyme']
+            intervenant_slug = intervention['parlementaire']['slug']
+        elif intervention["personnalite_id"]:
+            intervenant_nom = intervention['personnalite']['nom']
+
         interventions_reformated.append({
             "seance_id": intervention["seance_id"],
             # "seance_titre": intervention["seance"], voir Seance php class getTitre
@@ -94,10 +104,10 @@ def api_seance(request):
             "timestamp": intervention["timestamp"],
             # "section": "",
             # "soussection": "",
-            # "intervenant_nom": "",
-            # "intervenant_fonction": null,
-            # "intervenant_slug": "",
-            # "intervenant_groupe": "",
+            "intervenant_nom": intervenant_nom,
+            "intervenant_fonction": intervention["fonction"],
+            "intervenant_slug": intervenant_slug,
+            "intervenant_groupe": intervenant_groupe,
             "nbmots": intervention["nb_mots"],
             "contenu": intervention["intervention"],
             # "tags": [],
