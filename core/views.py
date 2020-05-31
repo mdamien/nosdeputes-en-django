@@ -48,7 +48,7 @@ def api_seance(request):
 
     # add tag infos to taggings
     for tagging in taggings:
-        tagging['tags'] = [tag for tag in tags if tagging['tag_id'] == tag['id']]
+        tagging['tag'] = find_by_id(tags, tagging['tag_id'])
 
     # add organisme infos to seance
     for seance in seances:
@@ -72,7 +72,7 @@ def api_seance(request):
     # keep only intervention about this law
     interventions_about_law = []
     for intervention in interventions:
-        lois_id = [tag['triple_value'] for tagging in intervention['taggings'] for tag in tagging['tags']]
+        lois_id = [tagging['tag']['triple_value'] for tagging in intervention['taggings']]
         if str(loi_id) in lois_id or str(loi_id).rjust(4, '0') in lois_id:
             interventions_about_law.append(intervention)
     interventions = interventions_about_law
@@ -94,6 +94,12 @@ def api_seance(request):
         elif intervention["personnalite_id"]:
             intervenant_nom = intervention['personnalite']['nom']
 
+        lois = []
+        for tagging in intervention['taggings']:
+            lois.append({
+                'loi': tagging['tag']['triple_value']
+            })
+
         interventions_reformated.append({
             "seance_id": intervention["seance_id"],
             # "seance_titre": intervention["seance"], voir Seance php class getTitre
@@ -112,11 +118,7 @@ def api_seance(request):
             "contenu": intervention["intervention"],
             # "tags": [],
             # "amendements": [],
-            # "lois": [
-            #  {
-            #    "loi": "0820"
-            #  }
-            # ],
+            "lois": lois,
             "source": intervention["source"],
             "url_nosdeputes": f"https://2007-2012.nosdeputes.fr/seance/{intervention['seance_id']}#inter_{intervention['md5']}",
             "url_nosdeputes_api": f"https://2007-2012.nosdeputes.fr/api/document/Intervention/{intervention['id']}/json",
