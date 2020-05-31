@@ -118,8 +118,8 @@ def api_seance(request):
             #  }
             # ],
             "source": intervention["source"],
-            # "url_nosdeputes": "https://2007-2012.nosdeputes.fr/seance/1050#inter_4a6b51d620cdecafad94e3de0f662986",
-            # "url_nosdeputes_api": "https://2007-2012.nosdeputes.fr/api/document/Intervention/723667/json",
+            "url_nosdeputes": f"https://2007-2012.nosdeputes.fr/seance/{intervention['seance_id']}#inter_{intervention['md5']}",
+            "url_nosdeputes_api": f"https://2007-2012.nosdeputes.fr/api/document/Intervention/{intervention['id']}/json",
             "id": intervention["id"],
             "_intervention": intervention,
         })
