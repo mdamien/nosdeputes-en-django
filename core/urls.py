@@ -19,5 +19,5 @@ from django.urls import path, include
 from .views import api_seance
 
 urlpatterns = [
-    path('seance/', api_seance),
+    path('seances/<int:seance_id>/<int:loi_id>/json', api_seance),
 ]

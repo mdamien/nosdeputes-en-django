@@ -24,15 +24,13 @@ def find_by_id(objs, id):
     return [obj for obj in objs if obj['id'] == id][0]
 
 
-def api_seance(request):
-    seance_id = 1050
-    loi_id = 820
-
+def api_seance(request, seance_id, loi_id):
     interventions = Intervention.objects.filter(seance_id=seance_id).order_by('timestamp')
     taggings = Tagging.objects.filter(taggable_model="Intervention", taggable_id__in=interventions)
     tags = Tag.objects.filter(id__in=taggings.values('tag_id'), triple_namespace='loi', triple_key='numero')
     seances = Seance.objects.filter(id__in=interventions.values('seance_id'))
     sections = Section.objects.filter(id__in=interventions.values('section_id'))
+    sections_parentes = Section.objects.filter(id__in=sections.values('section_id'))
     organismes = Organisme.objects.filter(id__in=seances.values('organisme_id'))
     parlementaires = Parlementaire.objects.filter(id__in=interventions.values('parlementaire_id'))
     personnalites = Personnalite.objects.filter(id__in=interventions.values('personnalite_id'))
@@ -45,6 +43,12 @@ def api_seance(request):
     organismes = jsonify(organismes)
     parlementaires = jsonify(parlementaires)
     personnalites = jsonify(personnalites)
+    sections_parentes = jsonify(sections_parentes)
+
+    # add tag infos to taggings
+    for section in sections:
+        if section['section_id']:
+            section['section'] = find_by_id(sections_parentes, section['section_id'])
 
     # add tag infos to taggings
     for tagging in taggings:
@@ -100,16 +104,26 @@ def api_seance(request):
                 'loi': tagging['tag']['triple_value']
             })
 
+        section = ""
+        soussection = ""
+        if intervention["section_id"]:
+            section = intervention["section"]
+            if section["section_id"]:
+                section, soussection = section["section"], section
+                soussection = soussection["titre"]
+            section = section["titre"]
+
         interventions_reformated.append({
             "seance_id": intervention["seance_id"],
-            # "seance_titre": intervention["seance"], voir Seance php class getTitre
+            # à fignoler voir Seance php class getTitre
+            "seance_titre": f"réunion du {intervention['date']} à {intervention['seance']['moment']}",
             "seance_lieu": seance_lieu,
             "date": intervention["date"],
             "heure": intervention["seance"]["moment"],
             "type": intervention["type"],
             "timestamp": intervention["timestamp"],
-            # "section": "",
-            # "soussection": "",
+            "section": section,
+            "soussection": soussection,
             "intervenant_nom": intervenant_nom,
             "intervenant_fonction": intervention["fonction"],
             "intervenant_slug": intervenant_slug,
