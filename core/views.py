@@ -4,6 +4,8 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.core.serializers import serialize
 
+import phpserialize
+
 from .models import Intervention, Tag, Tagging, Seance, Section, \
     Organisme, Personnalite, Parlementaire
 
@@ -137,11 +139,86 @@ def api_seance(request, seance_id, loi_id):
             "url_nosdeputes": f"https://2007-2012.nosdeputes.fr/seance/{intervention['seance_id']}#inter_{intervention['md5']}",
             "url_nosdeputes_api": f"https://2007-2012.nosdeputes.fr/api/document/Intervention/{intervention['id']}/json",
             "id": intervention["id"],
-            "_intervention": intervention,
+            # "_intervention": intervention,
         })
 
     interventions = interventions_reformated
 
     data = {'seance': interventions}
 
+    return JsonResponse(data)
+
+
+def api_deputes(request):
+    parlementaires = Parlementaire.objects.all()
+
+    parlementaires = jsonify(parlementaires)
+
+    parlementaires_reformatted = []
+    for parlementaire in parlementaires:
+        sites_web = []
+        if parlementaire["sites_web"]:
+            sites_web = phpserialize.loads(parlementaire["sites_web"].encode('utf-8')).values()
+            sites_web = [{"site": site.decode('utf-8')} for site in sites_web if site]
+
+        emails = []
+        if parlementaire["mails"]:
+            emails = phpserialize.loads(parlementaire["mails"].encode('utf-8')).values()
+            emails = [{"email": email.decode('utf-8')} for email in emails if email]
+
+        adresses = []
+        if parlementaire["adresses"]:
+            adresses = phpserialize.loads(parlementaire["adresses"].encode('utf-8')).values()
+            print(adresses)
+            adresses = [{"adresse": adresse.decode('utf-8')} for adresse in adresses if adresse]
+
+        parlementaires_reformatted.append({
+            "id": parlementaire["id"],
+            "nom": parlementaire["nom"],
+            "nom_de_famille": parlementaire["nom_de_famille"],
+            "prenom": parlementaire["nom"].split(' ')[0],
+            "sexe": parlementaire["sexe"],
+            "date_naissance": parlementaire["date_naissance"],
+            "lieu_naissance": parlementaire["lieu_naissance"],
+            # "num_deptmt": parlementaire["num_deptmt"],
+            "nom_circo": parlementaire["nom_circo"],
+            "num_circo": parlementaire["num_circo"],
+            "mandat_debut": parlementaire["debut_mandat"],
+            "groupe_sigle": parlementaire["groupe_acronyme"],
+            # "parti_ratt_financier": parlementaire["parti"],
+            "sites_web": sites_web,
+            "emails": emails,
+            "adresses": adresses,
+            # "collaborateurs": [
+            #   {
+            #     "collaborateur": "Mme Julie Phan-Pérain"
+            #   },
+            #   {
+            #     "collaborateur": "M. Jules Plat"
+            #   },
+            #   {
+            #     "collaborateur": "Mme Caroline Puisségur-Ripet"
+            #   }
+            # ],
+            # "autres_mandats": [],
+            # "anciens_autres_mandats": [],
+            # "anciens_mandats": [
+            #   {
+            #     "mandat": "21/06/2017 /  / "
+            #   }
+            # ],
+            # "profession": "Conseiller en gestion de patrimoine indépendant",
+            # "place_en_hemicycle": "309",
+            # "url_an": "http://www2.assemblee-nationale.fr/deputes/fiche/OMC_PA718902",
+            # "id_an": "718902",
+            # "slug": "cedric-roussel",
+            # "url_nosdeputes": "https://www.nosdeputes.fr/cedric-roussel",
+            # "url_nosdeputes_api": "https://www.nosdeputes.fr/cedric-roussel/json",
+            # "nb_mandats": 1,
+            # "twitter": "CedricRoussel06",
+            "_parlementaire": parlementaire,
+          })
+    parlementaires = parlementaires_reformatted
+
+    data = {'deputes': [parlementaires]}
     return JsonResponse(data)

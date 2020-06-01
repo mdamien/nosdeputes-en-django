@@ -16,8 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from .views import api_seance
+from .views import api_seance, api_deputes
 
 urlpatterns = [
     path('seances/<int:seance_id>/<int:loi_id>/json', api_seance),
+    path('deputes/json', api_deputes),
 ]
