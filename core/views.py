@@ -1,13 +1,15 @@
 import json
+from itertools import groupby
 
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.core.serializers import serialize
+from django.db.models import Count
 
 import phpserialize
 
 from .models import Intervention, Tag, Tagging, Seance, Section, \
-    Organisme, Personnalite, Parlementaire
+    Organisme, Personnalite, Parlementaire, Amendement
 
 
 def jsonify(queryset):
@@ -222,3 +224,24 @@ def api_deputes(request):
 
     data = {'deputes': [parlementaires]}
     return JsonResponse(data)
+
+
+
+def api_surprise(request):
+    duplicates = list(Amendement.objects.all().values('content_md5').annotate(total=Count('content_md5')).filter(total__gt=1))
+    duplicates = [amdt['content_md5'] for amdt in duplicates] # TODO: duplicate in LREM
+
+    amendements = Amendement.objects.filter(sort="adopté") \
+        .exclude(auteur_groupe_acronyme="LREM") \
+        .exclude(auteur_groupe_acronyme=None) \
+        .exclude(content_md5__in=duplicates)
+
+    amendements = jsonify(amendements)
+
+    for amdt in amendements:
+        amdt["url_nosdeputes"] = f"https://www.nosdeputes.fr/{amdt['legislature']}/amendement/{amdt['texteloi_id']}/{amdt['numero']}"
+
+    amendements.sort(key=lambda amdt:amdt['auteur_groupe_acronyme'])
+    amendements = {k: list(v) for k, v in groupby(amendements, lambda amdt: amdt['auteur_groupe_acronyme'])}
+
+    return JsonResponse(amendements, safe=False)
