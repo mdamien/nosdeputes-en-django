@@ -4,12 +4,9 @@ Petit projet pour le fun
 Pour l'installation:
 ```pip install django phpserialize  mysqlclient```
 
-Ensuite il faut créer un fichier `config/db.cnf` qui ressemble à celui-ci:
+Pour ingérer les données de NS/ND:
 
 ```
-[client]
-database = cpc
-user = cpc
-password = password
-default-character-set = utf8
+mysql -u cpc -ppassword --default-character-set=utf8 -e "CREATE DATABASE cpc_ns"
+mysql -u cpc -ppassword --default-character-set=utf8 cpc_ns < ~/Téléchargements/nossenateurs.fr_donnees.sql
 ```
