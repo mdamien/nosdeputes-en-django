@@ -11,7 +11,7 @@ from django.db import models
 class Alinea(models.Model):
     id = models.BigAutoField(primary_key=True)
     nb_commentaires = models.BigIntegerField(blank=True, null=True)
-    texteloi_id = models.CharField(max_length=16, blank=True, null=True)
+    texteloi_id = models.CharField(max_length=20, blank=True, null=True)
     article_loi_id = models.BigIntegerField(blank=True, null=True)
     numero = models.BigIntegerField(blank=True, null=True)
     texte = models.TextField(blank=True, null=True)
@@ -29,27 +29,28 @@ class Amendement(models.Model):
     id = models.BigAutoField(primary_key=True)
     nb_commentaires = models.BigIntegerField(blank=True, null=True)
     source = models.CharField(max_length=255, blank=True, null=True)
-    legislature = models.BigIntegerField(blank=True, null=True)
-    texteloi_id = models.CharField(max_length=16, blank=True, null=True)
+    texteloi_id = models.CharField(max_length=20, blank=True, null=True)
     numero = models.CharField(max_length=8, blank=True, null=True)
-    sous_amendement_de = models.CharField(max_length=8)
     rectif = models.BigIntegerField(blank=True, null=True)
     sujet = models.CharField(max_length=100, blank=True, null=True)
     sort = models.CharField(max_length=255, blank=True, null=True)
+    avis_comm = models.CharField(max_length=255, blank=True, null=True)
+    avis_gouv = models.CharField(max_length=255, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
-    auteur_groupe_acronyme = models.CharField(max_length=16, blank=True, null=True)
     signataires = models.TextField(blank=True, null=True)
     texte = models.TextField(blank=True, null=True)
     expose = models.TextField(blank=True, null=True)
+    ref_loi = models.CharField(max_length=255, blank=True, null=True)
+    organisme_id = models.BigIntegerField(blank=True, null=True)
+    numero_pere = models.BigIntegerField(blank=True, null=True)
     content_md5 = models.CharField(max_length=36, blank=True, null=True)
-    nb_multiples = models.IntegerField()
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
 
     class Meta:
         managed = False
         db_table = 'amendement'
-        unique_together = (('legislature', 'texteloi_id', 'numero', 'rectif'),)
+        unique_together = (('texteloi_id', 'numero', 'rectif'),)
 
 
 class Article(models.Model):
@@ -77,11 +78,11 @@ class Article(models.Model):
 class ArticleLoi(models.Model):
     id = models.BigAutoField(primary_key=True)
     nb_commentaires = models.BigIntegerField(blank=True, null=True)
-    texteloi_id = models.CharField(max_length=16, blank=True, null=True)
-    titre = models.CharField(max_length=16, blank=True, null=True)
+    texteloi_id = models.CharField(max_length=20, blank=True, null=True)
+    titre = models.CharField(max_length=20, blank=True, null=True)
     ordre = models.BigIntegerField(blank=True, null=True)
-    precedent = models.CharField(max_length=16, blank=True, null=True)
-    suivant = models.CharField(max_length=16, blank=True, null=True)
+    precedent = models.CharField(max_length=20, blank=True, null=True)
+    suivant = models.CharField(max_length=20, blank=True, null=True)
     expose = models.TextField(blank=True, null=True)
     titre_loi_id = models.BigIntegerField(blank=True, null=True)
     slug = models.CharField(max_length=255, blank=True, null=True)
@@ -128,7 +129,6 @@ class Intervention(models.Model):
     date = models.DateField(blank=True, null=True)
     personnalite_id = models.BigIntegerField(blank=True, null=True)
     parlementaire_id = models.BigIntegerField(blank=True, null=True)
-    parlementaire_groupe_acronyme = models.CharField(max_length=16, blank=True, null=True)
     fonction = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
@@ -140,7 +140,7 @@ class Intervention(models.Model):
 
 class Organisme(models.Model):
     id = models.BigAutoField(primary_key=True)
-    nom = models.CharField(unique=True, max_length=255, blank=True, null=True)
+    nom = models.CharField(unique=True, max_length=320, blank=True, null=True)
     type = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
@@ -158,32 +158,29 @@ class Parlementaire(models.Model):
     nom_de_famille = models.CharField(max_length=255, blank=True, null=True)
     sexe = models.CharField(max_length=255, blank=True, null=True)
     date_naissance = models.DateField(blank=True, null=True)
-    lieu_naissance = models.CharField(max_length=255, blank=True, null=True)
     nom_circo = models.CharField(max_length=255, blank=True, null=True)
     num_circo = models.BigIntegerField(blank=True, null=True)
     sites_web = models.TextField(blank=True, null=True)
     debut_mandat = models.DateField(blank=True, null=True)
     fin_mandat = models.DateField(blank=True, null=True)
     place_hemicycle = models.BigIntegerField(blank=True, null=True)
-    url_an = models.CharField(unique=True, max_length=255, blank=True, null=True)
+    url_institution = models.CharField(unique=True, max_length=255, blank=True, null=True)
     profession = models.CharField(max_length=255, blank=True, null=True)
     autoflip = models.IntegerField(blank=True, null=True)
-    id_an = models.BigIntegerField(unique=True, blank=True, null=True)
+    id_institution = models.CharField(unique=True, max_length=64, blank=True, null=True)
     type = models.CharField(max_length=255, blank=True, null=True)
     groupe_acronyme = models.CharField(max_length=8, blank=True, null=True)
+    parti = models.CharField(max_length=255)
     adresses = models.TextField(blank=True, null=True)
     suppleant_de_id = models.BigIntegerField(blank=True, null=True)
     anciens_mandats = models.TextField(blank=True, null=True)
     autres_mandats = models.TextField(blank=True, null=True)
-    anciens_autres_mandats = models.TextField(blank=True, null=True)
     mails = models.TextField(blank=True, null=True)
     top = models.TextField(blank=True, null=True)
     villes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     slug = models.CharField(unique=True, max_length=255, blank=True, null=True)
-    url_ancien_cpc = models.TextField()
-    url_nouveau_cpc = models.TextField()
 
     class Meta:
         managed = False
@@ -193,7 +190,6 @@ class Parlementaire(models.Model):
 class ParlementaireAmendement(models.Model):
     id = models.BigAutoField(primary_key=True)
     parlementaire_id = models.BigIntegerField(blank=True, null=True)
-    parlementaire_groupe_acronyme = models.CharField(max_length=16, blank=True, null=True)
     amendement_id = models.CharField(max_length=36, blank=True, null=True)
     numero_signataire = models.BigIntegerField(blank=True, null=True)
     created_at = models.DateTimeField()
@@ -230,8 +226,7 @@ class ParlementairePhoto(models.Model):
 class ParlementaireTexteloi(models.Model):
     id = models.BigAutoField(primary_key=True)
     parlementaire_id = models.BigIntegerField(blank=True, null=True)
-    parlementaire_groupe_acronyme = models.CharField(max_length=16, blank=True, null=True)
-    texteloi_id = models.CharField(max_length=16, blank=True, null=True)
+    texteloi_id = models.CharField(max_length=20, blank=True, null=True)
     importance = models.BigIntegerField(blank=True, null=True)
     fonction = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField()
@@ -249,7 +244,6 @@ class Personnalite(models.Model):
     nom_de_famille = models.CharField(max_length=255, blank=True, null=True)
     sexe = models.CharField(max_length=255, blank=True, null=True)
     date_naissance = models.DateField(blank=True, null=True)
-    lieu_naissance = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     slug = models.CharField(unique=True, max_length=255, blank=True, null=True)
@@ -262,7 +256,6 @@ class Personnalite(models.Model):
 class Presence(models.Model):
     id = models.BigAutoField(primary_key=True)
     parlementaire_id = models.BigIntegerField(blank=True, null=True)
-    parlementaire_groupe_acronyme = models.CharField(max_length=16, blank=True, null=True)
     seance_id = models.BigIntegerField(blank=True, null=True)
     nb_preuves = models.BigIntegerField(blank=True, null=True)
     date = models.DateField(blank=True, null=True)
@@ -287,28 +280,28 @@ class PreuvePresence(models.Model):
         db_table = 'preuve_presence'
 
 
-class QuestionEcrite(models.Model):
+class Question(models.Model):
     id = models.BigAutoField(primary_key=True)
     nb_commentaires = models.BigIntegerField(blank=True, null=True)
     source = models.CharField(unique=True, max_length=255, blank=True, null=True)
     legislature = models.BigIntegerField(blank=True, null=True)
-    numero = models.BigIntegerField(blank=True, null=True)
+    type = models.CharField(max_length=255, blank=True, null=True)
+    numero = models.CharField(max_length=8, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
     date_cloture = models.DateField(blank=True, null=True)
     ministere = models.TextField(blank=True, null=True)
-    themes = models.TextField(blank=True, null=True)
+    titre = models.TextField(blank=True, null=True)
     question = models.TextField(blank=True, null=True)
     reponse = models.TextField(blank=True, null=True)
     motif_retrait = models.TextField(blank=True, null=True)
     content_md5 = models.CharField(max_length=36, blank=True, null=True)
     parlementaire_id = models.BigIntegerField(blank=True, null=True)
-    parlementaire_groupe_acronyme = models.CharField(max_length=16, blank=True, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
 
     class Meta:
         managed = False
-        db_table = 'question_ecrite'
+        db_table = 'question'
         unique_together = (('legislature', 'numero'),)
 
 
@@ -319,7 +312,7 @@ class Seance(models.Model):
     numero_semaine = models.BigIntegerField(blank=True, null=True)
     annee = models.BigIntegerField(blank=True, null=True)
     type = models.CharField(max_length=255, blank=True, null=True)
-    moment = models.CharField(max_length=255, blank=True, null=True)
+    moment = models.CharField(max_length=30, blank=True, null=True)
     organisme_id = models.BigIntegerField(blank=True, null=True)
     tagged = models.IntegerField(blank=True, null=True)
     session = models.CharField(max_length=10, blank=True, null=True)
@@ -343,7 +336,7 @@ class Section(models.Model):
     max_date = models.DateField(blank=True, null=True)
     timestamp = models.BigIntegerField(blank=True, null=True)
     nb_interventions = models.BigIntegerField(blank=True, null=True)
-    id_dossier_an = models.CharField(max_length=255, blank=True, null=True)
+    id_dossier_institution = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
 
@@ -369,7 +362,7 @@ class Tagging(models.Model):
     id = models.BigAutoField(primary_key=True)
     tag_id = models.BigIntegerField()
     taggable_model = models.CharField(max_length=30, blank=True, null=True)
-    taggable_id = models.BigIntegerField(blank=True, null=True)
+    taggable_id = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -377,15 +370,14 @@ class Tagging(models.Model):
 
 
 class Texteloi(models.Model):
-    id = models.CharField(unique=True, max_length=16, blank=True, primary_key=True)
+    id = models.CharField(unique=True, max_length=20, blank=True, primary_key=True)
     nb_commentaires = models.BigIntegerField(blank=True, null=True)
-    legislature = models.BigIntegerField(blank=True, null=True)
     numero = models.BigIntegerField(blank=True, null=True)
     annexe = models.CharField(max_length=12, blank=True, null=True)
     type = models.CharField(max_length=255, blank=True, null=True)
     type_details = models.TextField(blank=True, null=True)
     categorie = models.CharField(max_length=128, blank=True, null=True)
-    id_dossier_an = models.CharField(max_length=255, blank=True, null=True)
+    id_dossier_institution = models.CharField(max_length=255, blank=True, null=True)
     titre = models.TextField(blank=True, null=True)
     date = models.DateField(blank=True, null=True)
     source = models.CharField(unique=True, max_length=128, blank=True, null=True)
@@ -398,13 +390,12 @@ class Texteloi(models.Model):
     class Meta:
         managed = False
         db_table = 'texteloi'
-        unique_together = (('numero', 'annexe'),)
 
 
 class TitreLoi(models.Model):
     id = models.BigAutoField(primary_key=True)
     nb_commentaires = models.BigIntegerField(blank=True, null=True)
-    texteloi_id = models.CharField(max_length=16, blank=True, null=True)
+    texteloi_id = models.CharField(max_length=20, blank=True, null=True)
     chapitre = models.CharField(max_length=8, blank=True, null=True)
     section = models.CharField(max_length=8, blank=True, null=True)
     titre = models.TextField(blank=True, null=True)
